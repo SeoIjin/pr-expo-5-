@@ -447,74 +447,38 @@ $monthly_bookings = $row_month['monthly_bookings'];
     </div>
     <script>
         document.getElementById('hamburgerMenu').addEventListener('click', function () {
-            this.classList.toggle('active');
-            const menu = document.getElementById('menu');
-            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+          this.classList.toggle('active');
+          const menu = document.getElementById('menu');
+          menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
         });
     // Function to get the current date and generate the dates for this week (Monday to Sunday)
     function getWeekDates() {
-        const currentDate = new Date();
-        const currentDay = currentDate.getDay();  // 0 (Sunday) to 6 (Saturday)
-        const daysInWeek = 7;
-        // Days of the week
-        const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-        // Calculate the difference to the previous Monday (or today if today is Monday)
-        const diffToMonday = currentDay === 0 ? -6 : 1 - currentDay; // 1 (Monday)
-        const weekDates = [];
-        for (let i = 0; i < daysInWeek; i++) {
-            const date = new Date(currentDate);
-            date.setDate(currentDate.getDate() + diffToMonday + i);
-            const dateString = date.toISOString().split('T')[0];  // YYYY-MM-DD format
-            const dayName = daysOfWeek[date.getDay()]; // Get the day name (Monday, Tuesday, etc.)
-            weekDates.push(`${dateString} (${dayName})`);
-        }
-        return weekDates;
+      const currentDate = new Date();
+      const currentDay = currentDate.getDay();  // 0 (Sunday) to 6 (Saturday)
+      const daysInWeek = 7;
+      // Days of the week
+      const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+      // Calculate the difference to the previous Monday (or today if today is Monday)
+      const diffToMonday = currentDay === 0 ? -6 : 1 - currentDay; // 1 (Monday)
+      const weekDates = [];
+      for (let i = 0; i < daysInWeek; i++) {
+        const date = new Date(currentDate);
+        date.setDate(currentDate.getDate() + diffToMonday + i);
+        const dateString = date.toISOString().split('T')[0];  // YYYY-MM-DD format
+        const dayName = daysOfWeek[date.getDay()]; // Get the day name (Monday, Tuesday, etc.)
+        weekDates.push(`${dateString} (${dayName})`);
+      }
+      return weekDates;
     }
     // Mock Data for Bookings (Replace this with dynamic data from your database)
     const bookingsData = [
-        { bookings: <?php
-$monday = date('Y-m-d', strtotime('last Monday'));
-$sql_monday = "SELECT COUNT(*) AS monday_bookings FROM bookings WHERE `date` = '$monday'";
-$result_monday = mysqli_query($data, $sql_monday);
-$row_monday = mysqli_fetch_assoc($result_monday);
-echo $row_monday['monday_bookings'] ?? 0;
-?> },  // Monday
-        { bookings: <?php echo $today_bookings ?? 0; ?> },  // Tuesday (Assuming today is Tuesday for this example)
-        { bookings: <?php
-$wednesday = date('Y-m-d', strtotime('this Wednesday'));
-$sql_wednesday = "SELECT COUNT(*) AS wednesday_bookings FROM bookings WHERE `date` = '$wednesday'";
-$result_wednesday = mysqli_query($data, $sql_wednesday);
-$row_wednesday = mysqli_fetch_assoc($result_wednesday);
-echo $row_wednesday['wednesday_bookings'] ?? 0;
-?> },  // Wednesday
-        { bookings: <?php
-$thursday = date('Y-m-d', strtotime('this Thursday'));
-$sql_thursday = "SELECT COUNT(*) AS thursday_bookings FROM bookings WHERE `date` = '$thursday'";
-$result_thursday = mysqli_query($data, $sql_thursday);
-$row_thursday = mysqli_fetch_assoc($result_thursday);
-echo $row_thursday['thursday_bookings'] ?? 0;
-?> },  // Thursday
-        { bookings: <?php
-$friday = date('Y-m-d', strtotime('this Friday'));
-$sql_friday = "SELECT COUNT(*) AS friday_bookings FROM bookings WHERE `date` = '$friday'";
-$result_friday = mysqli_query($data, $sql_friday);
-$row_friday = mysqli_fetch_assoc($result_friday);
-echo $row_friday['friday_bookings'] ?? 0;
-?> },  // Friday
-        { bookings: <?php
-$saturday = date('Y-m-d', strtotime('this Saturday'));
-$sql_saturday = "SELECT COUNT(*) AS saturday_bookings FROM bookings WHERE `date` = '$saturday'";
-$result_saturday = mysqli_query($data, $sql_saturday);
-$row_saturday = mysqli_fetch_assoc($result_saturday);
-echo $row_saturday['saturday_bookings'] ?? 0;
-?> },  // Saturday
-        { bookings: <?php
-$sunday = date('Y-m-d', strtotime('this Sunday'));
-$sql_sunday = "SELECT COUNT(*) AS sunday_bookings FROM bookings WHERE `date` = '$sunday'";
-$result_sunday = mysqli_query($data, $sql_sunday);
-$row_sunday = mysqli_fetch_assoc($result_sunday);
-echo $row_sunday['sunday_bookings'] ?? 0;
-?> }   // Sunday
+      { bookings: 0 },  // Monday
+      { bookings: <?php echo $total_bookings; ?> },  // Tuesday
+      { bookings: 0 },  // Wednesday
+      { bookings: 0 },  // Thursday
+      { bookings: 0 },  // Friday
+      { bookings: 0 },  // Saturday
+      { bookings: 0 }   // Sunday (No bookings for demo)
     ];
     // Generate the labels (dates and days) for this week
     const weekDates = getWeekDates();
@@ -522,37 +486,37 @@ echo $row_sunday['sunday_bookings'] ?? 0;
     // Create the chart
     const ctx = document.getElementById('bookingsChart').getContext('2d');
     const bookingsChart = new Chart(ctx, {
-        type: 'bar',  // Chart type (bar chart)
-        data: {
-            labels: weekDates,  // X-axis labels (combined date and day)
-            datasets: [{
-                label: 'Bookings',
-                data: bookings,  // Y-axis data (number of bookings)
-                backgroundColor: 'rgba(50, 205, 50, 0.5)',
-                borderColor: 'rgba(50, 205, 50, 1)',
-                borderWidth: 1
-            }]
+      type: 'bar',  // Chart type (bar chart)
+      data: {
+        labels: weekDates,  // X-axis labels (combined date and day)
+        datasets: [{
+          label: 'Bookings',
+          data: bookings,  // Y-axis data (number of bookings)
+          backgroundColor: 'rgba(50, 205, 50, 0.5)',
+          borderColor: 'rgba(50, 205, 50, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true  // Start the y-axis at 0
+          }
         },
-        options: {
-            scales: {
-                y: {
-                    beginAtZero: true  // Start the y-axis at 0
-                }
-            },
-            responsive: true,
-            maintainAspectRatio: false
-        }
+        responsive: true,
+        maintainAspectRatio: false
+      }
     });
         // Close the menu when the close button is clicked
         document.getElementById('closeMenu').addEventListener('click', function () {
-            const menu = document.getElementById('menu');
-            menu.style.display = 'none';
-            document.getElementById('hamburgerMenu').classList.remove('active'); // Reset the hamburger icon
+          const menu = document.getElementById('menu');
+          menu.style.display = 'none';
+          document.getElementById('hamburgerMenu').classList.remove('active'); // Reset the hamburger icon
         });
         // Add click event to the username to redirect
         document.querySelector('.username').addEventListener('click', function() {
-            window.location.href = 'profile.php'; // Change this URL to the actual profile page
-        });
+          window.location.href = 'profile.php'; // Change this URL to the actual profile page
+        }); 
     </script>
 </body>
 </html>
