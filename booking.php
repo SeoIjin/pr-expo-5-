@@ -12,10 +12,24 @@ if ($data === false) {
     die("Connection error: " . mysqli_connect_error());
 }
 // Assuming user email is stored in session after login
-if (isset($_SESSION['email'])) {
+$email = 'Guest'; // Default value
+$profile_picture = 'https://via.placeholder.com/50'; // Default placeholder image
+
+if (isset($_SESSION['user_id'])) {
+    $user_id = $_SESSION['user_id'];
     $email = $_SESSION['email'];
-} else {
-    $email = 'Guest'; // Default value if no user is logged in
+
+    // Fetch user's profile picture from the database
+    $sql_profile_pic = "SELECT profile_picture FROM useraccount WHERE id = '$user_id'";
+    $result_profile_pic = mysqli_query($data, $sql_profile_pic);
+
+    if ($result_profile_pic && mysqli_num_rows($result_profile_pic) > 0) {
+        $row_profile_pic = mysqli_fetch_assoc($result_profile_pic);
+        $profile_picture = $row_profile_pic['profile_picture'];
+        if (empty($profile_picture)) {
+            $profile_picture = 'https://via.placeholder.com/50'; // Use placeholder if no picture in DB
+        }
+    }
 }
 // Prevent Guest users from reserving a booking
 if ($email == 'Guest') {
@@ -36,16 +50,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Get the logged-in user's ID from the session
     $user_id = $_SESSION['user_id'];
     // Create SQL query to insert the reservation
-    $sql = "INSERT INTO bookings (name, age, time, date, massage_type, branch, email, user_id, concern, suggestion) 
-            VALUES ('$name', '$age', '$time', '$date', '$massage', '$branch', '$email', '$user_id', '$concern', '$suggestion')";
+    $sql = "INSERT INTO bookings (name, age, time, date, massage_type, branch, email, user_id, concern, suggestion)
+                VALUES ('$name', '$age', '$time', '$date', '$massage', '$branch', '$email', '$user_id', '$concern', '$suggestion')";
     // Execute the SQL query and check for errors
     if (mysqli_query($data, $sql)) {
         // Redirect after the 10-second delay
         echo "<script>
-                setTimeout(function() {
-                    window.location.href = 'booking.php'; // Redirect to the same page
-                } ); // 10000 ms = 10 seconds
-              </script>";
+                    setTimeout(function() {
+                        window.location.href = 'booking.php'; // Redirect to the same page
+                    } ); // 10000 ms = 10 seconds
+                 </script>";
     } else {
         echo "<script>alert('Error: " . mysqli_error($data) . "');</script>";
     }
@@ -202,7 +216,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         align-items: center;
         margin-bottom: 20px; /* Space from the top */
         padding: 10px; /* Space around the profile */
-        background-color: lightgreen;  /* Slightly different background for the profile section */
+        background-color: lightgreen;   /* Slightly different background for the profile section */
         border-radius: 15px;
         margin-left: 10px;
         margin-right: 10px;
@@ -212,6 +226,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         height: 50px;
         border-radius: 50%;
         margin-right: 10px;
+        object-fit: cover; /* Ensure the image covers the circle */
     }
     .username {
         font-size: 15.5px;
@@ -232,10 +247,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         margin-left: 25px;
         color: #fff;
         text-decoration: none;
-        ont-size: 18px;
+        font-size: 18px;
         display: block;
         transition: transform 0.5s, box-shadow 0.3s;
-        text-align: left;  /* Align the text to the left */
+        text-align: left;   /* Align the text to the left */
     }
     .menu ul li a:hover {
         color: #ff6347;
@@ -315,17 +330,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </div>
     <div id="menu" class="menu">
     <button id="closeMenu" class="close-btn">X</button>
-     <!-- User Profile in the Menu -->
-     <div class="user-profile">
-            <img src="https://via.placeholder.com/50" alt="User Avatar" class="user-avatar">
-            <span class="username"><?php echo htmlspecialchars($email); ?></span>
-        </div>
+      <div class="user-profile">
+                <img src="<?php echo htmlspecialchars($profile_picture); ?>" alt="User Avatar" class="user-avatar">
+                <span class="username"><?php echo htmlspecialchars($email); ?></span>
+            </div>
         <ul>
             <li><a href="homepage.php">Home</a></li><br>
             <li><a href="aboutus.php">About Us</a></li><br>
             <li><a href="services.php">Our Services</a></li><br>
             <li><a href="booking.php">Book Now</a></li><br>
-            <li><a href="logout.php">Settings</a></li><br>
+            <li><a href="profile.php">Settings</a></li><br>
             <li><a href="logout.php">Log Out</a></li>
         </ul>
     </div>
@@ -336,14 +350,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <li><a href="booking.php">Book Now</a></li>
         </div>
         <div class="container">
-        <?php if (!isset($_SESSION['user_id'])): ?> <!-- Check if user is not logged in -->
-                <button class="btn" onclick="showLogin()">Login</button>
-                <button class="btn" onclick="showRegister()">Register</button>
-            <?php else: ?> <!-- If logged in, hide the buttons -->
-                
-            <?php endif; ?>
+        <?php if (!isset($_SESSION['user_id'])): ?> <button class="btn" onclick="showLogin()">Login</button>
+                    <button class="btn" onclick="showRegister()">Register</button>
+                <?php else: ?> <?php endif; ?>
         </div>
-    </nav>      
+    </nav>
     <div class="content1">
         <h2>Booking Form</h2>
         <form action="" id="booking-form" method="POST" autocomplete="off">
@@ -388,11 +399,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <input type="suggestion" name="suggestion" id="suggestion" placeholder="Any suggestions" required>
             </div>
             <div class="booking">
-                <button type="submit" value="Book Now">Submit</button>              
+                <button type="submit" value="Book Now">Submit</button>
             </div>
         </form>
     </div>
-    <!-- Sweet notification -->
     <div class="notification" id="notification">
         <button class="close-btn" id="close-btn">&times;</button>
         <strong>Success!</strong> Your reservation has been made successfully.
@@ -476,9 +486,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
         }
         document.getElementById('hamburgerMenu').addEventListener('click', function () {
-                this.classList.toggle('active');
-                const menu = document.getElementById('menu');
-                menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+            this.classList.toggle('active');
+            const menu = document.getElementById('menu');
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
         });
             // Close the menu when the close button is clicked
             document.getElementById('closeMenu').addEventListener('click', function () {
@@ -489,7 +499,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             // Add click event to the username to redirect
             document.querySelector('.username').addEventListener('click', function() {
                 window.location.href = 'profile.php'; // Change this URL to the actual profile page
-        });  
+        });
     </script>
 </body>
 </html>
