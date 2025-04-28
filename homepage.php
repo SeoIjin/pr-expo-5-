@@ -100,7 +100,7 @@ if (isset($_SESSION['user_id'])) {
             display: flex;
             position: absolute; /* Position it in relation to the navbar */
             top: 15px; /* Space from the top */
-            right: 90px; /* Adjust horizontal spacing from the right */
+            right: 250px; /* Adjust horizontal spacing from the right */
             transition: transform 0.5s, box-shadow 0.3s;
         }
         .container .btn {
