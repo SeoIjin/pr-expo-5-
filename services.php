@@ -9,12 +9,25 @@ $data=mysqli_connect($host,$user,$password,$db);
 if($data===false) {
     die("Connection error");
 }
-// Assuming user email is stored in session after login
 session_start();
-if (isset($_SESSION['email'])) {
+$email = 'Guest'; // Default value
+$profile_picture = 'https://via.placeholder.com/50'; // Default placeholder image
+
+if (isset($_SESSION['user_id'])) {
+    $user_id = $_SESSION['user_id'];
     $email = $_SESSION['email'];
-} else {
-    $email = 'Guest'; // Default value if no user is logged in
+
+    // Fetch user's profile picture from the database
+    $sql_profile_pic = "SELECT profile_picture FROM useraccount WHERE id = '$user_id'";
+    $result_profile_pic = mysqli_query($data, $sql_profile_pic);
+
+    if ($result_profile_pic && mysqli_num_rows($result_profile_pic) > 0) {
+        $row_profile_pic = mysqli_fetch_assoc($result_profile_pic);
+        $profile_picture = $row_profile_pic['profile_picture'];
+        if (empty($profile_picture)) {
+            $profile_picture = 'https://via.placeholder.com/50'; // Use placeholder if no picture in DB
+        }
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -335,7 +348,7 @@ if (isset($_SESSION['email'])) {
     <button id="closeMenu" class="close-btn">X</button>
      <!-- User Profile in the Menu -->
       <div class="user-profile">
-          <img src="https://via.placeholder.com/50" alt="User Avatar" class="user-avatar">
+          <img src="<?php echo htmlspecialchars($profile_picture); ?>" alt="User Avatar" class="user-avatar">
           <span class="username"><?php echo htmlspecialchars($email); ?></span>
         </div>
           <ul>
